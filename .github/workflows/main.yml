@@ -16,6 +16,14 @@ jobs:
       run: |
         cd active-directory && zip -r ../CreateADPDC.zip *
 
+    - name: Archive SOFS Prep
+      run: |
+        cd sofs/prep && zip -r ../../PrepareSOFS.zip *
+
+    - name: Archive SOFS Config
+      run: |
+        cd sofs/config && zip -r ../../ConfigSOFS.zip *
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -37,3 +45,22 @@ jobs:
         asset_name: CreateADPDC.zip
         asset_content_type: application/zip
         
+    - name: Upload Asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./PrepareSOFS.zip
+        asset_name: PrepareSOFS.zip
+        asset_content_type: application/zip
+
+    - name: Upload Asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./ConfigSOFS.zip
+        asset_name: ConfigSOFS.zip
+        asset_content_type: application/zip

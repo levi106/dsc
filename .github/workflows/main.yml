@@ -33,7 +33,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        assert_path: ./CreateADPDC.zip
-        assert_name: CreateADPDC.zip
-        assert_content_type: application/zip
+        asset_path: ./CreateADPDC.zip
+        asset_name: CreateADPDC.zip
+        asset_content_type: application/zip
         

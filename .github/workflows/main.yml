@@ -14,7 +14,7 @@ jobs:
       
     - name: Archive CreateADPDC
       run: |
-        cd active-directory && zip -r ../CreateADPDC.zip
+        cd active-directory && zip -r ../CreateADPDC.zip *
 
     - name: Create Release
       id: create_release

@@ -12,17 +12,24 @@ configuration PrepareSOFS
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$AdminCreds,
 
-        
-        [String]$DomainNetbiosName=(Get-NetBIOSName -DomainName $DomainName),
-
         [Int]$RetryCount=20,
         [Int]$RetryIntervalSec=30
     )
 
+    try
+    {
+        Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows Azure' -Name dscPreboot
+    }
+    catch
+    {
+        Set-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows Azure' -Name dscPreboot -Value $True
+        Start-Sleep -Seconds 30
+        Restart-Computer -Force
+    }
+
     Import-DscResource -ModuleName xComputerManagement,xActiveDirectory
 
-    [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
-    [System.Management.Automation.PSCredential]$DomainFQDNCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
+    [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("$($Admincreds.UserName)@${DomainName}", $Admincreds.Password)
 
     Node localhost
     {
@@ -54,7 +61,7 @@ configuration PrepareSOFS
         xWaitForADDomain DscForestWait 
         { 
             DomainName = $DomainName 
-            DomainUserCredential= $DomainFQDNCreds
+            DomainUserCredential= $DomainCreds
             RetryCount = $RetryCount 
             RetryIntervalSec = $RetryIntervalSec 
             DependsOn = "[WindowsFeature]ADPS"
@@ -64,7 +71,7 @@ configuration PrepareSOFS
         {
             Name = $env:COMPUTERNAME
             DomainName = $DomainName
-            Credential = $DomainFQDNCreds
+            Credential = $DomainCreds
             DependsOn = "[xWaitForADDomain]DscForestWait"
         }
 
@@ -73,29 +80,5 @@ configuration PrepareSOFS
             RebootNodeIfNeeded = $True
         }
 
-    }
-}
-
-function Get-NetBIOSName
-{ 
-    [OutputType([string])]
-    param(
-        [string]$DomainName
-    )
-
-    if ($DomainName.Contains('.')) {
-        $length=$DomainName.IndexOf('.')
-        if ( $length -ge 16) {
-            $length=15
-        }
-        return $DomainName.Substring(0,$length)
-    }
-    else {
-        if ($DomainName.Length -gt 15) {
-            return $DomainName.Substring(0,15)
-        }
-        else {
-            return $DomainName
-        }
     }
 }

@@ -36,17 +36,25 @@ configuration ConfigSOFS
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$witnessStorageKey,
 
-        [String]$DomainNetbiosName=(Get-NetBIOSName -DomainName $DomainName),
-
         [Int]$RetryCount=20,
         [Int]$RetryIntervalSec=30
 
     )
 
+    try 
+    {
+        Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows Azure' -Name dscPreboot
+    } 
+    catch 
+    {
+        Set-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows Azure' -Name dscPreboot -Value $True
+        Start-Sleep -Seconds 30
+        Restart-Computer -Force
+    }
+
     Import-DscResource -ModuleName xComputerManagement, xFailOverCluster, xActiveDirectory, xSOFS
  
-    [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($Admincreds.UserName)", $Admincreds.Password)
-    [System.Management.Automation.PSCredential]$DomainFQDNCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
+    [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("$($Admincreds.UserName)@${DomainName}", $Admincreds.Password)
 
     [System.Collections.ArrayList]$Nodes=@()
     For ($count=0; $count -lt $vmCount; $count++) {
@@ -90,7 +98,7 @@ configuration ConfigSOFS
         xWaitForADDomain DscForestWait 
         { 
             DomainName = $DomainName 
-            DomainUserCredential= $DomainFQDNCreds
+            DomainUserCredential= $DomainCreds
             RetryCount = $RetryCount 
             RetryIntervalSec = $RetryIntervalSec 
 	        DependsOn = "[WindowsFeature]ADPS"
@@ -100,14 +108,14 @@ configuration ConfigSOFS
         {
             Name = $env:COMPUTERNAME
             DomainName = $DomainName
-            Credential = $DomainFQDNCreds
+            Credential = $DomainCreds
 	        DependsOn = "[xWaitForADDomain]DscForestWait"
         }
 
         xCluster FailoverCluster
         {
             Name = $ClusterName
-            DomainAdministratorCredential = $DomainFQDNCreds
+            DomainAdministratorCredential = $DomainCreds
             Nodes = $Nodes
 	        DependsOn = "[xComputer]DomainJoin"
         }
@@ -135,28 +143,4 @@ configuration ConfigSOFS
 
     }
 
-}
-
-function Get-NetBIOSName
-{ 
-    [OutputType([string])]
-    param(
-        [string]$DomainName
-    )
-
-    if ($DomainName.Contains('.')) {
-        $length=$DomainName.IndexOf('.')
-        if ( $length -ge 16) {
-            $length=15
-        }
-        return $DomainName.Substring(0,$length)
-    }
-    else {
-        if ($DomainName.Length -gt 15) {
-            return $DomainName.Substring(0,15)
-        }
-        else {
-            return $DomainName
-        }
-    }
 }

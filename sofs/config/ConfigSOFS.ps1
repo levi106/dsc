@@ -90,7 +90,7 @@ configuration ConfigSOFS
         xWaitForADDomain DscForestWait 
         { 
             DomainName = $DomainName 
-            DomainUserCredential= $DomainCreds
+            DomainUserCredential= $DomainFQDNCreds
             RetryCount = $RetryCount 
             RetryIntervalSec = $RetryIntervalSec 
 	        DependsOn = "[WindowsFeature]ADPS"
@@ -100,14 +100,14 @@ configuration ConfigSOFS
         {
             Name = $env:COMPUTERNAME
             DomainName = $DomainName
-            Credential = $DomainCreds
+            Credential = $DomainFQDNCreds
 	        DependsOn = "[xWaitForADDomain]DscForestWait"
         }
 
         xCluster FailoverCluster
         {
             Name = $ClusterName
-            DomainAdministratorCredential = $DomainCreds
+            DomainAdministratorCredential = $DomainFQDNCreds
             Nodes = $Nodes
 	        DependsOn = "[xComputer]DomainJoin"
         }

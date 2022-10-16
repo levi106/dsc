@@ -2,7 +2,7 @@
 # CopyrightMicrosoft Corporation. All rights reserved."
 #
 
-configuration Prep
+configuration PrepareSOFS
 {
     param
     (

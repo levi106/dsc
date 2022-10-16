@@ -1,5 +1,5 @@
 
-configuration Config
+configuration ConfigSOFS
 {
     param
     (

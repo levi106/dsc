@@ -54,7 +54,7 @@ configuration PrepareSOFS
         xWaitForADDomain DscForestWait 
         { 
             DomainName = $DomainName 
-            DomainUserCredential= $DomainCreds
+            DomainUserCredential= $DomainFQDNCreds
             RetryCount = $RetryCount 
             RetryIntervalSec = $RetryIntervalSec 
             DependsOn = "[WindowsFeature]ADPS"
@@ -64,7 +64,7 @@ configuration PrepareSOFS
         {
             Name = $env:COMPUTERNAME
             DomainName = $DomainName
-            Credential = $DomainCreds
+            Credential = $DomainFQDNCreds
             DependsOn = "[xWaitForADDomain]DscForestWait"
         }
 

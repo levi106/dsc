@@ -12,7 +12,7 @@ configuration CreateADPDC
         [Int]$RetryIntervalSec = 30
     ) 
     
-    Import-DscResource -ModuleName xActiveDirectory, xStorage, xNetworking, PSDesiredStateConfiguration, xPendingReboot
+    Import-DscResource -ModuleName xActiveDirectory, xStorage, xNetworking, PSDesiredStateConfiguration, xPendingReboot, DnsServerDsc
     [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
     $Configuration = Get-NetIPConfiguration | Where InterfaceAlias -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Configuration.InterfaceAlias)
@@ -61,6 +61,14 @@ configuration CreateADPDC
             InterfaceAlias = $InterfaceAlias
             AddressFamily  = 'IPv4'
             DependsOn      = "[WindowsFeature]DNS"
+        }
+
+        DnsServerForwarder SetForwarders
+        {
+            IsSingleInstance = 'Yes'
+            IPAddresses      = @('168.63.129.16')
+            UseRootHint      = $false
+            DependsOn        = "[WindowsFeature]DNS"
         }
 
         xWaitforDisk Disk2

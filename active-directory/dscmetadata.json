@@ -1,1 +1,1 @@
-{"Modules":["xActiveDirectory","xStorage","xNetworking","xPendingReboot"]}
+{"Modules":["xActiveDirectory","xStorage","xNetworking","xPendingReboot","DnsServerDsc"]}

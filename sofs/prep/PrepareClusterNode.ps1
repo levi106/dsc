@@ -48,6 +48,11 @@ configuration PrepareClusterNode
             Ensure    = "Present"
         }
 
+        WindowsFeature FCMgmt {
+            Name      = "RSAT-Clustering-Mgmt"
+            Ensure    = "Present"
+        }
+
         WindowsFeature ADPS
         {
             Name = "RSAT-AD-PowerShell"

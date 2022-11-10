@@ -24,6 +24,14 @@ jobs:
       run: |
         cd sofs/config && zip -r ../../ConfigSOFS.zip *
 
+    - name: Archive SOFS Prep
+      run: |
+        cd cluster/prep && zip -r ../../PrepareCluster.zip *
+
+    - name: Archive SOFS Config
+      run: |
+        cd cluster/config && zip -r ../../ConfigCluster.zip *
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -63,4 +71,25 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./ConfigSOFS.zip
         asset_name: ConfigSOFS.zip
+        asset_content_type: application/zip
+
+
+    - name: Upload Asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./PrepareCluster.zip
+        asset_name: PrepareCluster.zip
+        asset_content_type: application/zip
+
+    - name: Upload Asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./ConfigCluster.zip
+        asset_name: ConfigCluster.zip
         asset_content_type: application/zip

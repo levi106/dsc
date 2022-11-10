@@ -26,7 +26,7 @@ configuration ConfigureCluster
 
         [String]$WitnessStorageName,
 
-        [System.Management.Automation.PSCredential]$WitnessStorageKey,
+        [System.Management.Automation.PSCredential]$WitnessStorageKey
     )
 
     try 

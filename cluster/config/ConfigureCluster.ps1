@@ -124,10 +124,10 @@ configuration ConfigureCluster
         }
 
         Script ClusterWitness {
-            SetScript  = "if ('${WitnessType}' -eq 'Cloud') { Set-ClusterQuorum -CloudWitness -AccountName ${WitnessStorageName} -AccessKey $($WitnessStorageKey.GetNetworkCredential().Password) } else { Set-ClusterQuorum -DiskWitness `$((Get-ClusterGroup -Name 'Available Storage' | Get-ClusterResource | ? ResourceType -eq 'Physical Disk' | Sort-Object Name | Select-Object -Last 1).Name) }"
+            SetScript  = "Set-ClusterQuorum -CloudWitness -AccountName ${WitnessStorageName} -AccessKey $($WitnessStorageKey.GetNetworkCredential().Password)"
             TestScript = "((Get-ClusterQuorum).QuorumResource).Count -gt 0"
             GetScript  = "@{Ensure = if (((Get-ClusterQuorum).QuorumResource).Count -gt 0) {'Present'} else {'Absent'}}"
-            DependsOn  = "[Script]AddClusterDisks"
+            DependsOn  = "[Script]CreateCluster"
         }
 
         Script IncreaseClusterTimeouts {

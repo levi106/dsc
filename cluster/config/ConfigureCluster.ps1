@@ -123,11 +123,25 @@ configuration ConfigureCluster
             }
         }
 
+        Script FormatSharedDisks {
+            SetScript  = "Get-Disk | Where-Object PartitionStyle -eq 'RAW' | Initialize-Disk -PartitionStyle GPT -PassThru -ErrorAction SilentlyContinue | New-Partition -AssignDriveLetter -UseMaximumSize -ErrorAction SilentlyContinue | Format-Volume -FileSystem NTFS -Confirm:`$false"
+            TestScript = "(Get-Disk | Where-Object PartitionStyle -eq 'RAW').Count -eq 0"
+            GetScript  = "@{Ensure = if ((Get-Disk | Where-Object PartitionStyle -eq 'RAW').Count -eq 0) {'Present'} else {'Absent'}}"
+            DependsOn  = "[Script]CreateCluster"
+        }
+
+        Script AddClusterDisks {
+            SetScript  = "Get-ClusterAvailableDisk | Add-ClusterDisk"
+            TestScript = "(Get-ClusterAvailableDisk).Count -eq 0"
+            GetScript  = "@{Ensure = if ((Get-ClusterAvailableDisk).Count -eq 0) {'Present'} else {'Absent'}}"
+            DependsOn  = "[Script]FormatSharedDisks"
+        }
+
         Script ClusterWitness {
             SetScript  = "Set-ClusterQuorum -CloudWitness -AccountName ${WitnessStorageName} -AccessKey $($WitnessStorageKey.GetNetworkCredential().Password)"
             TestScript = "((Get-ClusterQuorum).QuorumResource).Count -gt 0"
             GetScript  = "@{Ensure = if (((Get-ClusterQuorum).QuorumResource).Count -gt 0) {'Present'} else {'Absent'}}"
-            DependsOn  = "[Script]CreateCluster"
+            DependsOn  = "[Script]AddClusterDisks"
         }
 
         Script IncreaseClusterTimeouts {
